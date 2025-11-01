@@ -1,0 +1,114 @@
+﻿@model Cinema.ViewModels.ShowTimeVM
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">✏️ Edit Showtime</h2>
+        <a href="/Admin/Showtime" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <form method="post">
+                <input type="hidden" asp-for="ShowTime.Id" />
+
+                <div class="row g-3">
+
+                    <!-- Movie -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Movie</label>
+                        <select asp-for="ShowTime.MovieId" class="form-select" asp-items="@(new SelectList(Model.Movies, "Id", "Title"))">
+                            <option value="">-- Select Movie --</option>
+                        </select>
+                        <span asp-validation-for="ShowTime.MovieId" class="text-danger"></span>
+                    </div>
+
+
+                    <!-- Branch -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Branch</label>
+                        <select id="BranchId" class="form-select"
+                                asp-items="@(new SelectList(Model.Branches, "Id", "Name", Model.ShowTime.CinemaHall?.BranchId))">
+                            <option value="">-- Select Branch --</option>
+                        </select>
+                    </div>
+
+                    <!-- Hall -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Cinema Hall</label>
+                        <select asp-for="ShowTime.CinemaHallId" id="CinemaHallId" class="form-select"
+                                asp-items="@(new SelectList(Model.Halls, "Id", "Name", Model.ShowTime.CinemaHallId))">
+                            <option value="">-- Select Hall --</option>
+                        </select>
+                        <span asp-validation-for="ShowTime.CinemaHallId" class="text-danger"></span>
+                    </div>
+
+
+                    <!-- Date -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Date</label>
+                        <input asp-for="ShowTime.ShowDate" type="date" class="form-control" />
+                        <span asp-validation-for="ShowTime.ShowDate" class="text-danger"></span>
+                    </div>
+
+                    <!-- Start Time -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Start Time</label>
+                        <input asp-for="ShowTime.StartTime" type="time" class="form-control" />
+                        <span asp-validation-for="ShowTime.StartTime" class="text-danger"></span>
+                    </div>
+
+                    <!-- Ticket Price -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Ticket Price</label>
+                        <input asp-for="ShowTime.TicketPrice" type="number" class="form-control" min="0" />
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Status</label>
+                        <select asp-for="ShowTime.Status" class="form-select">
+                            <option value="Active">Active</option>
+                            <option value="Upcoming" selected>Upcoming</option>
+                            <option value="Finished">Finished</option>
+                            <option value="Canceled">Canceled</option>
+                        </select>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Notes</label>
+                        <textarea asp-for="ShowTime.Notes" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="col-12 text-end mt-3">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-save"></i> Save Changes
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+            $("#BranchId").change(function () {
+        const branchId = $(this).val();
+        const hallSelect = $("#CinemaHallId");
+        hallSelect.empty().append(`<option value="">-- Select Hall --</option>`);
+
+        if (!branchId) return;
+
+        $.get(`/Admin/Showtime/GetHallsByBranch?branchId=${branchId}`, function (data) {
+            data.forEach(h => {
+                hallSelect.append(`<option value="${h.id}">${h.name}</option>`);
+            });
+        });
+    });
+    </script>
+}

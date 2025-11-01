@@ -1,0 +1,104 @@
+﻿@model ShowTimeVM
+
+<div class="container-fluid">
+    <h2 class="fw-bold mb-4">➕ Add New Showtime</h2>
+
+    <form method="post" asp-action="Create" asp-asp-controller="ShowTime">
+        <div class="row g-3">
+
+            <!-- Movie -->
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Movie</label>
+                <select class="form-select" asp-for="ShowTime.MovieId"
+                        asp-items="@(new SelectList(Model.Movies, "Id", "Title"))" required>
+                    <option value="">Select Movie</option>
+                </select>
+            </div>
+
+            <!-- Branch -->
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Branch</label>
+                <select id="branchSelect" class="form-select" required>
+                    <option value="">Select Branch</option>
+                    @foreach (var branch in Model.Branches)
+                    {
+                        <option value="@branch.Id">@branch.Name</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Hall -->
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Cinema Hall</label>
+                <select id="hallSelect" class="form-select" asp-for="ShowTime.CinemaHallId" required>
+                    <option value="">Select Hall</option>
+                </select>
+            </div>
+
+            <!-- Date -->
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Date</label>
+                <input asp-for="ShowTime.ShowDate" type="date" class="form-control" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+            </div>
+
+            <!-- Start Time -->
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Start Time</label>
+                <input asp-for="ShowTime.StartTime" type="time" class="form-control" required />
+            </div>
+            
+            <!-- Ticket Price -->
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Ticket Price</label>
+                <input asp-for="ShowTime.TicketPrice" type="number" class="form-control" required />
+            </div>
+
+            <!-- Status -->
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Status</label>
+                <select asp-for="ShowTime.Status" class="form-select">
+                    <option value="Active">Active</option>
+                    <option value="Upcoming" selected>Upcoming</option>
+                    <option value="Finished">Finished</option>
+                    <option value="Canceled">Canceled</option>
+                </select>
+            </div>
+
+            <!-- Notes -->
+            <div class="col-12">
+                <label class="form-label fw-semibold">Notes</label>
+                <textarea asp-for="ShowTime.Notes" class="form-control" rows="3"></textarea>
+            </div>
+
+            <div class="col-12 text-end mt-3">
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-save"></i> Save Changes
+                </button>
+            </div>
+
+            <div class="col-12 text-end">
+                <button type="submit" class="btn btn-success mt-3">Save Showtime</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById("branchSelect").addEventListener("change", function () {
+            var branchId = this.value;
+            var hallSelect = document.getElementById("hallSelect");
+
+            hallSelect.innerHTML = '<option>Loading...</option>';
+
+            fetch(`/Admin/Showtime/GetHallsByBranch?branchId=${branchId}`)
+                .then(res => res.json())
+                .then(data => {
+                    hallSelect.innerHTML = '<option value="">Select Hall</option>';
+                    data.forEach(hall => {
+                        hallSelect.innerHTML += `<option value="${hall.id}">${hall.name}</option>`;
+                    });
+                });
+        });
+    </script>
+}

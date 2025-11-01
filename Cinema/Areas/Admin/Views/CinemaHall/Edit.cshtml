@@ -1,0 +1,83 @@
+﻿@model CinemaHallVM
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">🏛️ Edit Hall</h2>
+        <a asp-controller="CinemaHall" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <form method="post" asp-controller="CinemaHall" asp-action="Edit">
+                <input type="hidden" asp-for="CinemaHall.Id" />
+
+                <div class="row g-3">
+
+                    <!-- Hall Name -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Hall Name</label>
+                        <input type="text" class="form-control" asp-for="CinemaHall.Name" placeholder="Enter hall name..." required />
+                        <span class="text-danger" asp-validation-for="CinemaHall.Name"></span>
+                    </div>
+
+                    <!-- Capacity -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Capacity</label>
+                        <input type="number" class="form-control" asp-for="CinemaHall.Capacity" placeholder="e.g. 100" required />
+                        <span class="text-danger" asp-validation-for="CinemaHall.Capacity"></span>
+                    </div>
+
+                    <!-- Hall Type -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Type</label>
+                        <select class="form-select" asp-for="CinemaHall.HallType" required>
+                            <option value="">Select Type</option>
+                            <option value="2D">2D</option>
+                            <option value="3D">3D</option>
+                            <option value="IMAX">IMAX</option>
+                            <option value="Luxury">Luxury</option>
+                        </select>
+                        <span class="text-danger" asp-validation-for="CinemaHall.HallType"></span>
+                    </div>
+
+                    <!-- Branch -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Branch</label>
+                        <select class="form-select"
+                                asp-for="CinemaHall.BranchId"
+                                asp-items="@(new SelectList(Model.Branches, "Id", "Name", Model.CinemaHall.BranchId))"
+                                required>
+                            <option value="">Select Branch</option>
+                        </select>
+                        <span class="text-danger" asp-validation-for="CinemaHall.BranchId"></span>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Status</label>
+                        <select class="form-select" asp-for="CinemaHall.Status" required>
+                            <option value="">Select Status</option>
+                            <option value="Active">Active</option>
+                            <option value="Under Maintenance">Under Maintenance</option>
+                            <option value="Closed">Closed</option>
+                        </select>
+                        <span class="text-danger" asp-validation-for="CinemaHall.Status"></span>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="col-12 text-end mt-3">
+                        <a asp-controller="CinemaHall" asp-action="Index" class="btn btn-outline-secondary me-2">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-check-circle"></i> Save Changes
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

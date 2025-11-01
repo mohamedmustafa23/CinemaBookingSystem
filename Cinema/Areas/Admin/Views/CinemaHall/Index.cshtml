@@ -1,0 +1,70 @@
+﻿@model IEnumerable<CinemaHall>
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">🏛️ Cinema Halls</h2>
+        <a asp-controller="CinemaHall" asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New Hall
+        </a>
+    </div>
+
+    <!-- Table -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Hall Name</th>
+                            <th>Capacity</th>
+                            <th>Branch</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th style="width: 160px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Sample Data (Static) -->
+                        @foreach (var hall in Model)
+                        {
+                            <tr>
+                                <td>@hall.Id</td>
+                                <td>@hall.Name</td>
+                                <td>@hall.Capacity</td>
+                                <td>@hall.Branch</td>
+                                <td>@hall.HallType</td>
+                                <td>
+                                    @{
+                                        string badgeClass = hall.Status switch
+                                        {
+                                            "Active" => "bg-success",
+                                            "Under Maintenance" => "bg-warning text-dark",
+                                            "Closed" => "bg-danger",
+                                            _ => "bg-secondary"
+                                        };
+                                    }
+                                    <span class="badge @badgeClass">@hall.Status</span>
+                                </td>
+                                <td>
+                                    <a href="/Admin/CinemaHall/Edit/@hall.Id" class="btn btn-sm btn-outline-warning me-1">
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </a>
+                                    <form action="/Admin/CinemaHall/Delete/@hall.Id" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_NotificationPartial" />
+}

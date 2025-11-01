@@ -1,0 +1,105 @@
+﻿@model Cinema.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard Overview";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold"><i class="bi bi-speedometer2 me-2"></i> Dashboard Overview</h2>
+        <span class="text-muted">Last updated: @DateTime.Now.ToString("dd MMM yyyy, HH:mm")</span>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm p-3">
+                <div class="text-primary mb-2"><i class="bi bi-film fs-1"></i></div>
+                <h5>Movies</h5>
+                <h3 class="fw-bolder">@Model.MoviesCount</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm p-3">
+                <div class="text-success mb-2"><i class="bi bi-building fs-1"></i></div>
+                <h5>Halls</h5>
+                <h3 class="fw-bolder">@Model.HallsCount</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm p-3">
+                <div class="text-warning mb-2"><i class="bi bi-person-video3 fs-1"></i></div>
+                <h5>Actors</h5>
+                <h3 class="fw-bolder">@Model.ActorsCount</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm p-3">
+                <div class="text-danger mb-2"><i class="bi bi-clock-history fs-1"></i></div>
+                <h5>Showtimes</h5>
+                <h3 class="fw-bolder">@Model.ShowtimesCount</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Chart -->
+    <div class="card mt-5 shadow-sm border-0">
+        <div class="card-header bg-light fw-bold">
+            <i class="bi bi-graph-up-arrow me-2"></i> Revenue Summary
+        </div>
+        <div class="card-body">
+            <canvas id="revenueChart" height="120"></canvas>
+        </div>
+    </div>
+
+    <!-- Summary Table -->
+    <div class="card shadow-sm border-0 mt-4">
+        <div class="card-header bg-light fw-bold">
+            <i class="bi bi-activity me-2"></i> System Overview
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered align-middle text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Statistic</th>
+                        <th>Count / Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Total Movies</td><td>@Model.MoviesCount</td></tr>
+                    <tr><td>Total Halls</td><td>@Model.HallsCount</td></tr>
+                    <tr><td>Total Actors</td><td>@Model.ActorsCount</td></tr>
+                    <tr><td>Today's Showtimes</td><td>@Model.TodayShowtimesCount</td></tr>
+                    <tr><td>Total Revenue</td><td>$@Model.TotalRevenue.ToString("N2")</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Revenue ($)',
+                    data: [120, 190, 300, 500, 200, 300, 400],
+                    backgroundColor: 'rgba(13,110,253,0.6)',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    </script>
+}

@@ -1,0 +1,66 @@
+﻿@model IEnumerable<ShowTime>
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">🕒 Manage Showtimes</h2>
+        <a href="/Admin/Showtime/Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add New Showtime
+        </a>
+    </div>
+
+    <!-- Table -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <table class="table table-striped align-middle text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Movie</th>
+                        <th>Branch</th>
+                        <th>Hall</th>
+                        <th>Date</th>
+                        <th>Start Time</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Sample Data -->
+                    @foreach(var showtime in Model)
+                    {
+                        <tr>
+                            <td>@showtime.Id</td>
+                            <td>@showtime.Movie?.Title</td>
+                            <td>@showtime.CinemaHall?.Branch?.Name</td>
+                            <td>@showtime.CinemaHall?.Name</td>
+                            <td>@showtime.ShowDate.ToString("yyyy-MM-dd")</td>
+                            <td>@showtime.StartTime.ToString(@"hh\:mm")</td>
+                            <td>@showtime.Status</td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a asp-area="Admin" asp-controller="ShowTime" asp-action="Delete" asp-route-id="@showtime.Id"
+                                       class="btn btn-sm btn-outline-warning d-flex align-items-center gap-1">
+                                        <i class="bi bi-pencil-square"></i>
+                                        <span>Edit</span>
+                                    </a>
+                                    <form asp-area="Admin" asp-controller="ShowTime" asp-action="Delete" method="post">
+                                        <input type="hidden" name="id" value="@showtime.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
+                                                onclick="return confirm('Are you sure you want to delete this actor?');">
+                                            <i class="bi bi-trash"></i>
+                                            <span>Delete</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@section Scripts {
+        <partial name="_NotificationPartial" />
+}

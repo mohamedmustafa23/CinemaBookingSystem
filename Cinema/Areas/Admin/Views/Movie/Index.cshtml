@@ -1,0 +1,67 @@
+﻿@model IEnumerable<Cinema.Models.Movie>
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">🎞️ Movies List</h2>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add New Movie
+        </a>
+    </div>
+
+    <!-- Table -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Poster</th>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Language</th>
+                                <th>Age</th>
+                                <th>Trailer</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var movie in Model)
+                            {
+                                <tr>
+                                    <td>@movie.Id</td>
+                                    <td>
+                                        <img src="@movie.Poster" alt="@movie.Title" width="70" class="rounded shadow-sm" />
+                                    </td>
+                                    <td>@movie.Title</td>
+                                    <td>@movie.Category?.Name</td>
+                                    <td>@movie.Language</td>
+                                    <td>@movie.AgeRestriction+</td>
+                                    <td>
+                                        <a href="@movie.Trailer" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-play-circle"></i> Watch
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a asp-action="Edit" asp-route-id="@movie.Id" class="btn btn-sm btn-outline-warning me-1">
+                                            <i class="bi bi-pencil">Edit</i>
+                                        </a>
+                                        <form asp-action="Delete" asp-route-id="@movie.Id" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                    onclick="return confirm('Are you sure you want to delete this movie?')">
+                                                <i class="bi bi-trash">Delete</i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_NotificationPartial" />
+}
