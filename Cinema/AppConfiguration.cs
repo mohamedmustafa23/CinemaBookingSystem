@@ -38,7 +38,7 @@ namespace Cinema
             services.AddScoped<IRepository<ShowTime>, Repository<ShowTime>>();
             services.AddScoped<IRepository<CinemaBranch>, Repository<CinemaBranch>>();
             services.AddScoped<IRepository<CinemaHall>, Repository<CinemaHall>>();
-
+            services.AddScoped<IRepository<ApplicationUserOTP>, Repository<ApplicationUserOTP>>();
         }
     }
 }
