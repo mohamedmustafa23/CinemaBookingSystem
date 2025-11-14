@@ -1,5 +1,6 @@
 ﻿using Cinema.Models;
 using Cinema.Repositories.IRepositories;
+using Cinema.Utilities;
 using Cinema.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -55,6 +56,9 @@ namespace Cinema.Areas.Identity.Controllers
             var link = Url.Action(nameof(ConfirmEmail), "Account", new { area = "Identity", userId = user.Id, token }, Request.Scheme, Request.Host.ToString());
 
             await _emailSender.SendEmailAsync(registerVM.Email, "Confirm your email", $"<h1>Confirm your email by Clicking <a href='{link}'>Here</a></h1>");
+
+            await _userManager.AddToRoleAsync(user, SD.Role_Customer);
+            
 
             TempData["JustRegistered"] = true;
             return RedirectToAction(nameof(Login));
@@ -201,7 +205,7 @@ namespace Cinema.Areas.Identity.Controllers
         </div>");
 
             TempData["SuccessMessage"] = "OTP code has been sent to your email!";
-            TempData["UserEmail"] = user.Email; // ✅ عشان نستخدمه في صفحة الـ OTP
+            TempData["UserEmail"] = user.Email; 
             return RedirectToAction(nameof(ValidateOTP), new { userId = user.Id });
         }
 
@@ -284,5 +288,14 @@ namespace Cinema.Areas.Identity.Controllers
             TempData["SuccessMessage"] = "Password reset successfully! You can now sign in.";
             return RedirectToAction(nameof(Login));
         }
+        [HttpPost]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+
+            TempData["SuccessMessage"] = "You have been logged out successfully.";
+            return RedirectToAction("Index", "Home", new { area = "Customer" });
+        }
+
     }
 }

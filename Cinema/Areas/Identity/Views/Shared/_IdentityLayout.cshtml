@@ -1,47 +1,119 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@using Cinema.Models
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
 
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signin</title>
+    <title>@ViewData["Title"] - MyShowz</title>
     <link rel="stylesheet" type="text/css" href="~/assets/css/as-alert-message.min.css">
     <link rel="stylesheet" type="text/css"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="~/assets/css/style-starter.css">
-    <link rel="stylesheet" type="text/css" href="~/assets/css/sign-in.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+    @if (ViewData["IncludeSignInCSS"] as bool? == true)
+    {
+        <link rel="stylesheet" type="text/css" href="~/assets/css/sign-in.css" />
+    }
+    @if (ViewData["Profile"] as bool? == true)
+    {
+        <link rel="stylesheet" type="text/css" href="~/assets/css/Profile.css" />
+    }
+    @await RenderSectionAsync("Styles", required: false)
 </head>
-
 <body>
+    @{
+        ApplicationUser currentUser = null;
+        if (User.Identity.IsAuthenticated)
+        {
+            currentUser = await UserManager.GetUserAsync(User);
+        }
+    }
     <header id="site-header" class="w3l-header fixed-top">
         <!--/nav-->
         <nav class="navbar navbar-expand-lg navbar-light fill px-lg-0 py-0 px-3">
             <div class="container">
                 <h1>
-                    <a class="navbar-brand" href="index.html">
-                        <span class="fa fa-play icon-log"
-                              aria-hidden="true"></span>
+                    <a class="navbar-brand" asp-controller="Home" asp-action="Index" asp-area="Customer">
+                        <span class="fa fa-play icon-log" aria-hidden="true"></span>
                         MyShowz
                     </a>
                 </h1>
+                
+                <!-- Navbar Toggler for Mobile -->
+                <button class="navbar-toggler collapsed" type="button" data-toggle="collapse"
+                        data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="fa icon-expand fa-bars"></span>
+                    <span class="fa icon-close fa-times"></span>
+                </button>
+
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index" asp-area="Customer">Home</a>
+                        </li>
+                    </ul>
                 </div>
-                <div class="Login_SignUp" id="login_s">
-                    <!-- style="font-size: 2rem ; display: inline-block; position: relative;" -->
-                    <!-- <li class="nav-item"> -->
-                    <a class="nav-link" href="sign_in.html"><i class="fa fa-user-circle-o"></i></a>
-                    <!-- </li> -->
+
+                <!-- Login/SignUp Dropdown -->
+                <div class="dropdown Login_SignUp">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button"
+                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+
+                        @if (User.Identity.IsAuthenticated && currentUser != null)
+                        {
+                            if (!string.IsNullOrEmpty(currentUser.ProfilePicture))
+                            {
+                                <img src="@currentUser.ProfilePicture"
+                                     alt="Profile"
+                                     class="rounded-circle"
+                                     style="width:30px;height:30px;object-fit:cover;margin-right:8px;">
+                            }
+                            else
+                            {
+                                <i class="fa fa-user-circle-o" style="font-size:1.8rem;margin-right:8px;"></i>
+                            }
+                            <span>@currentUser.UserName</span>
+                        }
+                        else
+                        {
+                            <i class="fa fa-user-circle-o" style="font-size:1.8rem;margin-right:8px;"></i>
+                            <span>Account</span>
+                        }
+                    </a>
+
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <a class="dropdown-item" asp-area="Identity" asp-controller="Profile" asp-action="Profile">My Profile</a>
+                            <form asp-area="Identity" asp-controller="Account" asp-action="Logout" method="post">
+                                <button type="submit" class="dropdown-item btn btn-link">Logout</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a class="dropdown-item" asp-area="Identity" asp-controller="Account" asp-action="Login">Login</a>
+                            <a class="dropdown-item" asp-area="Identity" asp-controller="Account" asp-action="Register">Sign Up</a>
+                        }
+                    </div>
                 </div>
-                <!-- toggle switch for light and dark theme -->
-                <div class="mobile-position">
+
+                <!-- Toggle switch for light and dark theme -->
+                <div class="mobile-position ml-3">
                     <nav class="navigation">
                         <div class="theme-switch-wrapper">
                             <div class="mode-container">
                                 <label class="theme-switch" for="checkbox">
                                     <input type="checkbox" id="checkbox">
-                                    <i class="gg-sun"></i>
-                                    <i class="gg-moon"></i>
+                                    <span class="slider round">
+                                        <i class="gg-sun"></i>
+                                        <i class="gg-moon"></i>
+                                    </span>
                                 </label>
                             </div>
                         </div>
@@ -50,14 +122,32 @@
             </div>
         </nav>
     </header>
-    @RenderBody()
+
+    <!-- Main Content -->
+    <main role="main" class="pb-3">
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="w3l-footer">
+        <div class="container py-4">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <p>&copy; @DateTime.Now.Year - MyShowz. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
     <script src="~/assets/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="~/assets/js/sign-in.js"></script>
     <!--/theme-change-->
     <script src="~/assets/js/theme-change.js"></script>
     <script src="~/assets/js/owl.carousel.js"></script>
-
-    @RenderSection("Scripts", required: false)
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
-
 </html>

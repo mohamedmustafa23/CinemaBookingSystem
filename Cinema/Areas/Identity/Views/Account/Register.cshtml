@@ -1,6 +1,6 @@
 ﻿@model Cinema.ViewModels.RegisterVM
 @{
-    ViewData["Title"] = "Register";
+    ViewData["IncludeSignInCSS"] = true;
 }
 
 <div class="container_signup_signin" id="container_signup_signin">
@@ -100,3 +100,8 @@
         });
     </script>
 }
+<style>
+    footer {
+        display: none !important;
+    }
+</style>

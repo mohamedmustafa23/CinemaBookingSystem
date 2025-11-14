@@ -1,0 +1,1166 @@
+﻿@model MovieBookingVM
+
+@{
+    ViewData["Title"] = $"Book - {Model.Movie.Title}";
+}
+
+<div class="container" id="progress-container-id">
+    <div class="row">
+        <div class="col">
+            <div class="px-0 pt-4 pb-0 mt-3 mb-3">
+                <form id="bookingForm">
+                    <ul id="progressbar" class="progressbar-class">
+                        <li class="active" id="step1">Show timing selection</li>
+                        <li id="step2" class="not_active">Seat Selection</li>
+                        <li id="step3" class="not_active">Payment</li>
+                        <li id="step4" class="not_active">E-Ticket</li>
+                    </ul>
+                    <br>
+
+                    <!-- Step 1: Show Time Selection -->
+                    <fieldset id="fieldset1">
+                        <div id="screen-select-div">
+                            <div class="movie-info-header mb-4">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <img src="@Model.Movie.Poster" alt="@Model.Movie.Title" class="img-fluid rounded">
+                                    </div>
+                                    <div class="col-md-9">
+                                        <h2>@Model.Movie.Title</h2>
+                                        <p><strong>Duration:</strong> @Model.Movie.Duration minutes</p>
+                                        <p><strong>Language:</strong> @Model.Movie.Language</p>
+                                        <p><strong>Age Restriction:</strong> @Model.Movie.AgeRestriction+</p>
+                                        <p><strong>Release Date:</strong> @Model.Movie.ReleaseDate.ToString("dd MMM yyyy")</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h2>Select Show Date</h2>
+
+                            @if (Model.AvailableDates != null && Model.AvailableDates.Any())
+                            {
+                                <div class="carousel carousel-nav" data-flickity='{"contain": true, "pageDots": false, "freeScroll": true}'>
+                                    @for (int i = 0; i < Model.AvailableDates.Count; i++)
+                                    {
+                                        var date = Model.AvailableDates[i];
+                                        var dayName = date.Date == DateTime.Today ? "Today" :
+                                        date.Date == DateTime.Today.AddDays(1) ? "Tomorrow" :
+                                        date.ToString("dddd");
+
+                                        <div class="carousel-cell date-cell"
+                                             id="date-@i"
+                                             data-date="@date.ToString("yyyy-MM-dd")"
+                                             onclick="selectDate(this, '@date.ToString("yyyy-MM-dd")')">
+                                            <div class="date-numeric">@date.Day</div>
+                                            <div class="date-day">@dayName</div>
+                                        </div>
+                                    }
+                                </div>
+
+                                <div id="showtimes-container" class="mt-4">
+                                    <h3>Available Show Times</h3>
+                                    <div id="showtimes-list">
+                                        <p class="text-muted">Please select a date to view available show times</p>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning">
+                                    <i class="fa fa-exclamation-triangle"></i>
+                                    No show times available for this movie at the moment.
+                                    <br>
+                                    <a href="@Url.Action("Index", "Home")" class="btn btn-primary mt-3">Browse Other Movies</a>
+                                </div>
+                            }
+                        </div>
+
+                        <input id="screen-next-btn"
+                               type="button"
+                               name="next-step"
+                               class="next-step"
+                               value="Continue to Seat Selection"
+                               disabled />
+                    </fieldset>
+
+                    <!-- Step 2: Seat Selection -->
+                    <fieldset id="fieldset2" style="display: none;">
+                        <h2>Select Your Seats</h2>
+                        <div class="selected-show-info mb-4">
+                            <div class="alert alert-info">
+                                <strong>Selected Show:</strong>
+                                <span id="selected-cinema-hall"></span> -
+                                <span id="selected-date"></span> at
+                                <span id="selected-time"></span>
+                                <br>
+                                <strong>Price per ticket:</strong>
+                                <span id="selected-price"></span> EGP
+                            </div>
+                        </div>
+
+                        <div class="seat-selection-container">
+                            <div class="screen-indicator">
+                                <div class="screen">SCREEN</div>
+                            </div>
+
+                            <div class="seats-grid mt-4" id="seats-grid">
+                                <!-- سيتم إنشاء المقاعد ديناميكياً -->
+                            </div>
+
+                            <div class="seat-legend mt-4">
+                                <div class="legend-item">
+                                    <div class="seat-box available"></div>
+                                    <span>Available</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="seat-box selected"></div>
+                                    <span>Selected</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="seat-box occupied"></div>
+                                    <span>Occupied</span>
+                                </div>
+                            </div>
+
+                            <div class="booking-summary mt-4">
+                                <h4>Booking Summary</h4>
+                                <p>Selected Seats: <strong id="selected-seats-display">None</strong></p>
+                                <p>Total Amount: <strong id="total-amount">0.00 EGP</strong></p>
+                            </div>
+                        </div>
+
+                        <input type="button" name="next-step" class="next-step" value="Proceed to Payment" id="seat-next-btn" disabled />
+                        <input type="button" name="previous-step" class="previous-step" value="Back" />
+                    </fieldset>
+
+                    <!-- Step 3: Payment -->
+                    <fieldset id="fieldset3" style="display: none;">
+                        <div id="payment_div">
+                            <h2>Payment Details</h2>
+
+                            <div class="payment-summary mb-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5>Booking Summary</h5>
+                                        <p><strong>Movie:</strong> @Model.Movie.Title</p>
+                                        <p><strong>Cinema Hall:</strong> <span id="payment-cinema-hall"></span></p>
+                                        <p><strong>Date & Time:</strong> <span id="payment-datetime"></span></p>
+                                        <p><strong>Seats:</strong> <span id="payment-seats"></span></p>
+                                        <hr>
+                                        <h4><strong>Total Amount:</strong> <span id="payment-total">0.00 EGP</span></h4>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="payment-row">
+                                <div class="col-75">
+                                    <div class="payment-container">
+                                        <div class="payment-row">
+                                            <div class="col-50">
+                                                <h3 id="payment-h3">Payment Method</h3>
+                                                <div class="payment-row payment">
+                                                    <div class="col-50 payment">
+                                                        <label for="card" class="method card">
+                                                            <div class="icon-container">
+                                                                <i class="fa fa-cc-visa" style="color: navy"></i>
+                                                                <i class="fa fa-cc-amex" style="color: blue"></i>
+                                                                <i class="fa fa-cc-mastercard" style="color: red"></i>
+                                                                <i class="fa fa-cc-discover" style="color: orange"></i>
+                                                            </div>
+                                                            <div class="radio-input">
+                                                                <input type="radio" name="payment-method" id="card" value="card" checked />
+                                                                Pay with Credit/Debit Card
+                                                            </div>
+                                                        </label>
+                                                    </div>
+                                                    <div class="col-50 payment">
+                                                        <label for="paypal" class="method paypal">
+                                                            <div class="icon-container">
+                                                                <i class="fa fa-paypal" style="color: navy"></i>
+                                                            </div>
+                                                            <div class="radio-input">
+                                                                <input id="paypal" name="payment-method" type="radio" value="paypal">
+                                                                Pay with PayPal
+                                                            </div>
+                                                        </label>
+                                                    </div>
+                                                </div>
+
+                                                <div id="card-details">
+                                                    <div class="payment-row">
+                                                        <div class="col-50">
+                                                            <label for="cname">Cardholder's Name</label>
+                                                            <input type="text" id="cname" name="cardname" placeholder="Firstname Lastname" required />
+                                                        </div>
+                                                        <div class="col-50">
+                                                            <label for="ccnum">Credit card number</label>
+                                                            <input type="text" id="ccnum" name="cardnumber" placeholder="xxxx-xxxx-xxxx-xxxx" maxlength="19" required />
+                                                        </div>
+                                                    </div>
+                                                    <div class="payment-row">
+                                                        <div class="col-50">
+                                                            <label for="expmonth">Exp Month</label>
+                                                            <input type="text" id="expmonth" name="expmonth" placeholder="MM" maxlength="2" required />
+                                                        </div>
+                                                        <div class="col-50">
+                                                            <div class="payment-row">
+                                                                <div class="col-50">
+                                                                    <label for="expyear">Exp Year</label>
+                                                                    <input type="text" id="expyear" name="expyear" placeholder="YYYY" maxlength="4" required />
+                                                                </div>
+                                                                <div class="col-50">
+                                                                    <label for="cvv">CVV</label>
+                                                                    <input type="text" id="cvv" name="cvv" placeholder="xxx" maxlength="3" required />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="button" name="next-step" class="next-step pay-btn" value="Confirm Payment" id="payment-btn" />
+                        <input type="button" name="previous-step" class="previous-step" value="Back" />
+                    </fieldset>
+
+                    <!-- Step 4: E-Ticket -->
+                    <fieldset id="fieldset4" style="display: none;">
+                        <h2>Your E-Ticket</h2>
+                        <div class="success-message mb-4">
+                            <div class="alert alert-success">
+                                <i class="fa fa-check-circle"></i>
+                                <strong>Booking Confirmed!</strong> Your ticket has been generated successfully.
+                            </div>
+                        </div>
+
+                        <div class="ticket-wrapper">
+                            <div class="ticket-body">
+                                <div class="ticket">
+                                    <div class="holes-top"></div>
+                                    <div class="title">
+                                        <p class="cinema">MyShowz Entertainment</p>
+                                        <p class="movie-title">@Model.Movie.Title</p>
+                                    </div>
+                                    <div class="poster">
+                                        <img src="@Model.Movie.Poster"
+                                             alt="@Model.Movie.Title"
+                                             onerror="this.src='/assets/images/placeholder.jpg'" />
+                                    </div>
+                                    <div class="info">
+                                        <table class="info-table ticket-table">
+                                            <tr>
+                                                <th>CINEMA HALL</th>
+                                                <th>DATE</th>
+                                                <th>TIME</th>
+                                            </tr>
+                                            <tr>
+                                                <td id="ticket-hall" class="bigger">-</td>
+                                                <td id="ticket-date" class="bigger">-</td>
+                                                <td id="ticket-time" class="bigger">-</td>
+                                            </tr>
+                                        </table>
+                                        <table class="info-table ticket-table">
+                                            <tr>
+                                                <th>SEATS</th>
+                                                <th>PRICE</th>
+                                                <th>BOOKING ID</th>
+                                            </tr>
+                                            <tr>
+                                                <td id="ticket-seats">-</td>
+                                                <td id="ticket-price">-</td>
+                                                <td id="ticket-booking-id">-</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="holes-lower"></div>
+                                    <div class="serial">
+                                        <div id="barcode-container"></div>
+                                        <p class="ticket-note mt-3 mb-0">
+                                            <small>Please show this ticket at the cinema entrance</small>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ticket-actions mt-4">
+                            <button type="button" class="btn btn-primary" onclick="window.print()">
+                                <i class="fa fa-print"></i> Print Ticket
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="downloadTicket()">
+                                <i class="fa fa-download"></i> Download PDF
+                            </button>
+                            <input type="button" class="home-page-btn" value="Browse More Movies"
+                                   onclick="location.href='@Url.Action("Index", "Home")';" />
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden Fields -->
+<input type="hidden" id="movieId" value="@Model.Movie.Id" />
+<input type="hidden" id="selectedShowTimeId" />
+<input type="hidden" id="selectedDateValue" />
+<input type="hidden" id="ticketPrice" />
+
+@section Scripts {
+    <script>
+        let selectedSeats = [];
+        let selectedShowTime = null;
+        let ticketPrice = 0;
+        const movieId = @Model.Movie.Id;
+
+        $(document).ready(function() {
+            // Initialize Flickity for date carousel
+            $('.carousel-nav').flickity({
+                contain: true,
+                pageDots: false,
+                freeScroll: true,
+                cellAlign: 'left'
+            });
+
+            // Multi-step form navigation
+            let currentStep = 1;
+            const totalSteps = 4;
+
+            // Next button click
+            $('.next-step').click(function() {
+                if (validateStep(currentStep)) {
+                    $(`#fieldset${currentStep}`).hide();
+                    currentStep++;
+                    $(`#fieldset${currentStep}`).show();
+                    updateProgressBar(currentStep);
+
+                    if (currentStep === 4) {
+                        generateTicket();
+                    }
+                }
+            });
+
+            // Previous button click
+            $('.previous-step').click(function() {
+                $(`#fieldset${currentStep}`).hide();
+                currentStep--;
+                $(`#fieldset${currentStep}`).show();
+                updateProgressBar(currentStep);
+            });
+
+            // Payment method change
+            $('input[name="payment-method"]').change(function() {
+                if ($(this).val() === 'card') {
+                    $('#card-details').show();
+                } else {
+                    $('#card-details').hide();
+                }
+            });
+        });
+
+        // Select date function
+        function selectDate(element, date) {
+            // Remove active class from all dates
+            $('.date-cell').removeClass('active').css('background', 'rgb(243, 235, 235)');
+
+            // Add active class to selected date
+            $(element).addClass('active').css('background', '#df0e62');
+
+            $('#selectedDateValue').val(date);
+
+            // Load show times for selected date
+            loadShowTimes(movieId, date);
+        }
+
+        // Load show times via AJAX
+        function loadShowTimes(movieId, date) {
+            $.ajax({
+                url: '@Url.Action("GetShowTimesByDate", "Home")',
+                type: 'GET',
+                data: { movieId: movieId, date: date },
+                success: function(data) {
+                    displayShowTimes(data, date);
+                },
+                error: function() {
+                    toastr.error('Failed to load show times');
+                }
+            });
+        }
+
+        // Display show times
+        function displayShowTimes(showTimes, date) {
+            const container = $('#showtimes-list');
+            container.empty();
+
+            if (showTimes.length === 0) {
+                container.html('<p class="text-muted">No shows available for this date</p>');
+                $('#screen-next-btn').prop('disabled', true);
+                return;
+            }
+
+            // Group by cinema hall
+            const groupedByHall = {};
+            showTimes.forEach(st => {
+                if (!groupedByHall[st.cinemaHallName]) {
+                    groupedByHall[st.cinemaHallName] = [];
+                }
+                groupedByHall[st.cinemaHallName].push(st);
+            });
+
+            let html = '<ul class="time-ul">';
+            for (const [hallName, times] of Object.entries(groupedByHall)) {
+                html += `
+                    <li class="time-li">
+                        <div class="screens">${hallName}</div>
+                        <div class="time-btn">`;
+
+                times.forEach(time => {
+                    const disabled = time.status !== 'Active' ? 'disabled' : '';
+                    html += `
+                        <button class="screen-time ${disabled}"
+                                onclick="selectShowTime(${time.id}, '${hallName}', '${time.startTime}', ${time.ticketPrice}, '${date}')"
+                                ${disabled}>
+                            ${time.startTime}
+                        </button>`;
+                });
+
+                html += `
+                        </div>
+                    </li>`;
+            }
+            html += '</ul>';
+
+            container.html(html);
+        }
+
+        // Select show time
+        function selectShowTime(showTimeId, hallName, time, price, date) {
+            selectedShowTime = {
+                id: showTimeId,
+                hallName: hallName,
+                time: time,
+                price: price,
+                date: date
+            };
+
+            ticketPrice = price;
+
+            $('#selectedShowTimeId').val(showTimeId);
+            $('#ticketPrice').val(price);
+
+            // Update UI
+            $('.screen-time').removeClass('selected');
+            event.target.classList.add('selected');
+
+            // Enable next button
+            $('#screen-next-btn').prop('disabled', false);
+
+            // Save to session
+            $.post('@Url.Action("SelectShowTime", "Home")', {
+                showTimeId: showTimeId,
+                movieId: movieId
+            });
+
+            // Update seat selection info
+            $('#selected-cinema-hall').text(hallName);
+            $('#selected-date').text(new Date(date).toLocaleDateString());
+            $('#selected-time').text(time);
+            $('#selected-price').text(price.toFixed(2));
+
+            // Generate seats
+            generateSeats();
+        }
+
+        // Generate seats grid
+        function generateSeats() {
+            const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+            const seatsPerRow = 12;
+            let html = '';
+
+            rows.forEach(row => {
+                html += `<div class="seat-row">`;
+                html += `<div class="row-label">${row}</div>`;
+
+                for (let i = 1; i <= seatsPerRow; i++) {
+                    const seatId = `${row}${i}`;
+                    const isOccupied = Math.random() < 0.2; // محاكاة مقاعد محجوزة
+                    const occupiedClass = isOccupied ? 'occupied' : '';
+
+                    html += `
+                        <div class="seat-box ${occupiedClass}"
+                             data-seat="${seatId}"
+                             onclick="toggleSeat(this, '${seatId}')"
+                             ${isOccupied ? 'style="pointer-events:none"' : ''}>
+                            ${i}
+                        </div>`;
+                }
+
+                html += `</div>`;
+            });
+
+            $('#seats-grid').html(html);
+        }
+
+        // Toggle seat selection
+        function toggleSeat(element, seatId) {
+            const $seat = $(element);
+
+            if ($seat.hasClass('selected')) {
+                $seat.removeClass('selected');
+                selectedSeats = selectedSeats.filter(s => s !== seatId);
+            } else {
+                if (selectedSeats.length >= 10) {
+                    toastr.warning('Maximum 10 seats can be selected');
+                    return;
+                }
+                $seat.addClass('selected');
+                selectedSeats.push(seatId);
+            }
+
+            updateBookingSummary();
+        }
+
+        // Update booking summary
+        function updateBookingSummary() {
+            const totalAmount = selectedSeats.length * ticketPrice;
+
+            $('#selected-seats-display').text(selectedSeats.length > 0 ? selectedSeats.join(', ') : 'None');
+            $('#total-amount').text(totalAmount.toFixed(2) + ' EGP');
+
+            // Update payment summary
+            $('#payment-seats').text(selectedSeats.join(', '));
+            $('#payment-total').text(totalAmount.toFixed(2) + ' EGP');
+            $('#payment-cinema-hall').text(selectedShowTime?.hallName || '-');
+            $('#payment-datetime').text(`${selectedShowTime?.date || '-'} at ${selectedShowTime?.time || '-'}`);
+
+            // Enable/disable next button
+            $('#seat-next-btn').prop('disabled', selectedSeats.length === 0);
+        }
+
+        // Validate step
+        function validateStep(step) {
+            switch(step) {
+                case 1:
+                    if (!selectedShowTime) {
+                        toastr.error('Please select a show time');
+                        return false;
+                    }
+                    return true;
+                case 2:
+                    if (selectedSeats.length === 0) {
+                        toastr.error('Please select at least one seat');
+                        return false;
+                    }
+                    return true;
+                case 3:
+                    if (!validatePayment()) {
+                        return false;
+                    }
+                    return true;
+                default:
+                    return true;
+            }
+        }
+
+        // Validate payment
+        function validatePayment() {
+            const paymentMethod = $('input[name="payment-method"]:checked').val();
+
+            if (paymentMethod === 'card') {
+                const cardName = $('#cname').val();
+                const cardNumber = $('#ccnum').val();
+                const expMonth = $('#expmonth').val();
+                const expYear = $('#expyear').val();
+                const cvv = $('#cvv').val();
+
+                if (!cardName || !cardNumber || !expMonth || !expYear || !cvv) {
+                    toastr.error('Please fill in all card details');
+                    return false;
+                }
+
+                if (cardNumber.replace(/\s/g, '').length < 16) {
+                    toastr.error('Invalid card number');
+                    return false;
+                }
+            }
+
+            // Process payment and save booking
+            processBooking();
+
+            return true;
+        }
+
+        // Process booking
+        function processBooking() {
+            const bookingData = {
+                showTimeId: parseInt($('#selectedShowTimeId').val()),
+                selectedSeats: selectedSeats,
+                paymentMethod: $('input[name="payment-method"]:checked').val(),
+                notes: '',
+                cardHolderName: $('#cname').val(),
+                cardNumber: $('#ccnum').val()?.replace(/[-\s]/g, ''),
+                expiryMonth: $('#expmonth').val(),
+                expiryYear: $('#expyear').val(),
+                cvv: $('#cvv').val()
+            };
+
+            // Show loading
+            $('#payment-btn').prop('disabled', true).val('Processing...');
+
+            $.ajax({
+                url: '@Url.Action("ConfirmBooking", "Booking")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(bookingData),
+                success: function(response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+
+                        // Store booking details for ticket generation
+                        window.bookingDetails = response.data;
+
+                        // Move to next step automatically
+                        setTimeout(function() {
+                            $('#fieldset3').hide();
+                            $('#fieldset4').show();
+                            updateProgressBar(4);
+                            generateTicketFromBooking(response.data);
+                        }, 1000);
+                    } else {
+                        toastr.error(response.message);
+                        $('#payment-btn').prop('disabled', false).val('Confirm Payment');
+                    }
+                },
+                error: function(xhr) {
+                    toastr.error('An error occurred while processing your booking');
+                    $('#payment-btn').prop('disabled', false).val('Confirm Payment');
+                }
+            });
+        }
+
+        // Generate ticket from booking data
+        function generateTicketFromBooking(data) {
+            $('#ticket-hall').text(data.cinemaHall);
+            $('#ticket-date').text(data.showDate);
+            $('#ticket-time').text(data.showTime);
+            $('#ticket-seats').text(data.seats);
+            $('#ticket-price').text(data.totalAmount.toFixed(2) + ' EGP');
+            $('#ticket-booking-id').text(data.bookingReference);
+
+            // Generate barcode
+            let barcodeHtml = '<table class="barcode ticket-table"><tr>';
+            const barcodeData = data.bookingReference;
+            for (let i = 0; i < 50; i++) {
+                const color = Math.random() > 0.5 ? 'black' : 'white';
+                barcodeHtml += `<td style="background-color:${color};"></td>`;
+            }
+            barcodeHtml += '</tr></table>';
+            barcodeHtml += '<table class="numbers ticket-table"><tr>';
+            for (let i = 0; i < barcodeData.length; i++) {
+                barcodeHtml += `<td>${barcodeData.charAt(i)}</td>`;
+            }
+            barcodeHtml += '</tr></table>';
+
+            $('#barcode-container').html(barcodeHtml);
+        }
+
+        // Update progress bar
+        function updateProgressBar(step) {
+            for (let i = 1; i <= 4; i++) {
+                if (i < step) {
+                    $(`#step${i}`).removeClass('not_active').addClass('active');
+                } else if (i === step) {
+                    $(`#step${i}`).removeClass('not_active').addClass('active');
+                } else {
+                    $(`#step${i}`).removeClass('active').addClass('not_active');
+                }
+            }
+        }
+
+        // Generate ticket (fallback for testing)
+        function generateTicket() {
+            if (window.bookingDetails) {
+                generateTicketFromBooking(window.bookingDetails);
+            } else {
+                // Fallback for testing without actual booking
+                const bookingId = 'BK' + Date.now();
+                const totalAmount = selectedSeats.length * ticketPrice;
+
+                $('#ticket-hall').text(selectedShowTime.hallName);
+                $('#ticket-date').text(new Date(selectedShowTime.date).toLocaleDateString());
+                $('#ticket-time').text(selectedShowTime.time);
+                $('#ticket-seats').text(selectedSeats.join(', '));
+                $('#ticket-price').text(totalAmount.toFixed(2) + ' EGP');
+                $('#ticket-booking-id').text(bookingId);
+
+                // Generate simple barcode
+                let barcodeHtml = '<table class="barcode ticket-table"><tr>';
+                for (let i = 0; i < 50; i++) {
+                    const color = Math.random() > 0.5 ? 'black' : 'white';
+                    barcodeHtml += `<td style="background-color:${color};"></td>`;
+                }
+                barcodeHtml += '</tr></table>';
+                barcodeHtml += '<table class="numbers ticket-table"><tr>';
+                for (let i = 0; i < 22; i++) {
+                    barcodeHtml += `<td>${Math.floor(Math.random() * 10)}</td>`;
+                }
+                barcodeHtml += '</tr></table>';
+
+                $('#barcode-container').html(barcodeHtml);
+            }
+
+            toastr.success('Booking completed successfully!');
+        }
+
+        // Download ticket (placeholder)
+        function downloadTicket() {
+            toastr.info('PDF download feature coming soon!');
+        }
+
+        // Format card number input
+        $('#ccnum').on('input', function() {
+            let value = $(this).val().replace(/\s/g, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join('-') || value;
+            $(this).val(formattedValue);
+        });
+    </script>
+
+    <style>
+        .date-cell {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 15px;
+            text-align: center;
+            background: rgb(243, 235, 235);
+            border-radius: 8px;
+            margin: 0 5px;
+        }
+
+            .date-cell.active {
+                background: #df0e62 !important;
+                color: white;
+            }
+
+            .date-cell:hover {
+                transform: scale(1.05);
+            }
+
+        .date-numeric {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .date-day {
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .date-month {
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .screen-time {
+            margin: 5px;
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+            .screen-time:hover:not(:disabled) {
+                background: #f36140;
+                color: white;
+                border-color: #f36140;
+            }
+
+            .screen-time.selected {
+                background: #df0e62;
+                color: white;
+                border-color: #df0e62;
+            }
+
+            .screen-time:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+        .seat-row {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+            align-items: center;
+        }
+
+        .row-label {
+            width: 30px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .seat-box {
+            width: 35px;
+            height: 35px;
+            margin: 3px;
+            background: #28a745;
+            border-radius: 5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+            color: white;
+        }
+
+            .seat-box.selected {
+                background: #df0e62;
+            }
+
+            .seat-box.occupied {
+                background: #6c757d;
+                cursor: not-allowed;
+            }
+
+            .seat-box:hover:not(.occupied) {
+                transform: scale(1.1);
+            }
+
+        .screen-indicator {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .screen {
+            background: linear-gradient(to bottom, #666, #333);
+            color: white;
+            padding: 10px;
+            border-radius: 10px 10px 0 0;
+            width: 60%;
+            margin: 0 auto;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .seat-legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .legend-item .seat-box {
+                cursor: default;
+            }
+
+        .booking-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .movie-info-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .ticket-actions {
+            text-align: center;
+        }
+
+            .ticket-actions button,
+            .ticket-actions input {
+                margin: 10px;
+            }
+
+        #showtimes-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .time-ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .time-li {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .screens {
+            min-width: 120px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .time-btn {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .selected-show-info {
+            margin-top: 20px;
+        }
+
+        .payment-summary .card {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .success-message {
+            text-align: center;
+        }
+
+            .success-message .alert {
+                font-size: 18px;
+            }
+
+        /* Ticket Styling */
+        .ticket-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 15px;
+            margin-bottom: 30px;
+        }
+
+        .ticket-body {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .ticket {
+            background: white;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+            .ticket .title {
+                padding: 15px 20px;
+                text-align: center;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+
+                .ticket .title .cinema {
+                    font-size: 12px;
+                    margin: 0;
+                    opacity: 0.9;
+                    font-weight: 600;
+                    letter-spacing: 1px;
+                    text-transform: uppercase;
+                }
+
+                .ticket .title .movie-title {
+                    font-size: 18px;
+                    margin: 5px 0 0 0;
+                    font-weight: bold;
+                    line-height: 1.3;
+                }
+
+            .ticket .poster {
+                width: 100%;
+                height: 200px;
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+                border-top: 3px solid #667eea;
+                border-bottom: 3px solid #667eea;
+            }
+
+                .ticket .poster img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    object-position: center top;
+                }
+
+            .ticket .info {
+                padding: 20px 15px;
+                background: white;
+            }
+
+            .ticket .info-table {
+                width: 100%;
+                margin-bottom: 12px;
+                border-collapse: collapse;
+            }
+
+                .ticket .info-table:last-child {
+                    margin-bottom: 0;
+                }
+
+                .ticket .info-table th {
+                    font-size: 10px;
+                    color: #999;
+                    text-transform: uppercase;
+                    font-weight: 600;
+                    padding: 6px 4px;
+                    text-align: center;
+                    letter-spacing: 0.5px;
+                }
+
+                .ticket .info-table td {
+                    font-size: 14px;
+                    color: #333;
+                    font-weight: 600;
+                    padding: 4px;
+                    text-align: center;
+                }
+
+                    .ticket .info-table td.bigger {
+                        font-size: 16px;
+                        color: #667eea;
+                        font-weight: 700;
+                    }
+
+            .ticket .serial {
+                padding: 15px 15px;
+                background: #f8f9fa;
+                border-top: 2px dashed #ddd;
+            }
+
+            .ticket .holes-top,
+            .ticket .holes-lower {
+                height: 15px;
+                position: relative;
+                background: white;
+            }
+
+                .ticket .holes-top::before,
+                .ticket .holes-top::after,
+                .ticket .holes-lower::before,
+                .ticket .holes-lower::after {
+                    content: "";
+                    position: absolute;
+                    width: 25px;
+                    height: 25px;
+                    background: #f8f9fa;
+                    border-radius: 50%;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    box-shadow: 0 0 0 3px white;
+                }
+
+                .ticket .holes-top::before,
+                .ticket .holes-lower::before {
+                    left: -12px;
+                }
+
+                .ticket .holes-top::after,
+                .ticket .holes-lower::after {
+                    right: -12px;
+                }
+
+        .ticket-note {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            margin-top: 10px;
+        }
+
+        #barcode-container {
+            margin: 10px 0;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+            #barcode-container .barcode,
+            #barcode-container .numbers {
+                width: 100%;
+            }
+
+            #barcode-container table {
+                margin: 0 auto;
+            }
+
+        @@media print {
+            body * {
+                visibility: hidden;
+            }
+
+            .ticket-wrapper,
+            .ticket-wrapper * {
+                visibility: visible;
+            }
+
+            .ticket-wrapper {
+                position: fixed;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            .ticket-actions {
+                display: none !important;
+            }
+
+            #progressbar,
+            fieldset:not(#fieldset4) {
+                display: none !important;
+            }
+        }
+
+        fieldset {
+            min-height: 400px;
+        }
+
+        @@media (max-width: 768px) {
+            .ticket-body {
+                max-width: 100%;
+                padding: 0 10px;
+            }
+
+            .ticket .poster {
+                height: 180px;
+            }
+
+            .ticket .title .movie-title {
+                font-size: 16px;
+            }
+
+            .ticket .info {
+                padding: 15px 10px;
+            }
+
+            .ticket .info-table td {
+                font-size: 12px;
+                padding: 3px;
+            }
+
+                .ticket .info-table td.bigger {
+                    font-size: 14px;
+                }
+
+            .ticket .info-table th {
+                font-size: 9px;
+                padding: 5px 3px;
+            }
+        }
+    </style>
+}

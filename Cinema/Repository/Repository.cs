@@ -37,7 +37,8 @@ namespace Cinema.Repositories
             Expression<Func<T, bool>>? expression = null,
             Expression<Func<T, object>>[]? includes = null,
             bool tracked = true,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            Func<object, object> orderBy = null)
         {
             var entities = _dbSet.AsQueryable();
 

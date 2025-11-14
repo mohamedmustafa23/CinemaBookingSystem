@@ -1,0 +1,299 @@
+﻿@model IEnumerable<Booking>
+
+@{
+    ViewData["Title"] = "My Bookings";
+}
+
+<section class="w3l-breadcrumb">
+    <div class="container">
+        <h2 class="inner-w3-title mt-5">My Bookings</h2>
+    </div>
+</section>
+
+<section class="w3l-booking-section py-5">
+    <div class="container py-lg-4">
+        @if (Model != null && Model.Any())
+        {
+            <div class="row">
+                @foreach (var booking in Model)
+                {
+                    var showDateTime = booking.ShowTime.ShowDate.Date + booking.ShowTime.StartTime;
+                    var isPast = showDateTime < DateTime.Now;
+                    var canCancel = showDateTime > DateTime.Now.AddHours(2) && booking.BookingStatus == "Confirmed";
+
+                    <div class="col-lg-6 col-md-12 mb-4">
+                        <div class="booking-card">
+                            <div class="booking-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                <div class="booking-status-badge">
+                                    <span class="badge badge-@(booking.BookingStatus == "Confirmed" ? "success" : booking.BookingStatus == "Cancelled" ? "danger" : "warning")">
+                                        @booking.BookingStatus
+                                    </span>
+                                </div>
+                                <h4 class="text-white mb-0">@booking.ShowTime.Movie.Title</h4>
+                                <p class="text-white-50 mb-0">Booking #@booking.BookingReference</p>
+                            </div>
+
+                            <div class="booking-body">
+                                <div class="booking-details">
+                                    <div class="detail-row">
+                                        <i class="fa fa-calendar"></i>
+                                        <div>
+                                            <strong>Date & Time</strong>
+                                            <p>@booking.ShowTime.ShowDate.ToString("ddd, dd MMM yyyy") at @booking.ShowTime.StartTime.ToString(@"hh\:mm tt")</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="detail-row">
+                                        <i class="fa fa-map-marker"></i>
+                                        <div>
+                                            <strong>Cinema Hall</strong>
+                                            <p>@booking.ShowTime.CinemaHall.Name</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="detail-row">
+                                        <i class="fa fa-ticket"></i>
+                                        <div>
+                                            <strong>Seats (@booking.NumberOfSeats)</strong>
+                                            <p>@string.Join(", ", booking.BookingSeats.Select(bs => bs.SeatNumber))</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="detail-row">
+                                        <i class="fa fa-credit-card"></i>
+                                        <div>
+                                            <strong>Payment</strong>
+                                            <p>@booking.PaymentMethod - @booking.PaymentStatus</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="detail-row">
+                                        <i class="fa fa-money"></i>
+                                        <div>
+                                            <strong>Total Amount</strong>
+                                            <p class="amount">@booking.TotalAmount.ToString("N2") EGP</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="detail-row">
+                                        <i class="fa fa-clock-o"></i>
+                                        <div>
+                                            <strong>Booked On</strong>
+                                            <p>@booking.BookingDate.ToString("dd MMM yyyy, hh:mm tt")</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="booking-actions mt-3">
+                                    <a href="@Url.Action("BookingDetails", "Booking", new { id = booking.Id })"
+                                       class="btn btn-primary btn-sm">
+                                        <i class="fa fa-eye"></i> View Details
+                                    </a>
+
+                                    @if (canCancel)
+                                    {
+                                        <button type="button"
+                                                class="btn btn-danger btn-sm"
+                                                onclick="cancelBooking(@booking.Id)">
+                                            <i class="fa fa-times"></i> Cancel Booking
+                                        </button>
+                                    }
+
+                                    @if (booking.BookingStatus == "Confirmed" && !isPast)
+                                    {
+                                        <a href="@Url.Action("BookingDetails", "Booking", new { id = booking.Id })"
+                                           class="btn btn-success btn-sm">
+                                            <i class="fa fa-download"></i> Download Ticket
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fa fa-ticket" style="font-size: 80px; color: #ccc;"></i>
+                <h3 class="mt-3">No Bookings Yet</h3>
+                <p class="text-muted">Start by booking a movie ticket</p>
+                <a href="@Url.Action("Index", "Movies")" class="btn btn-primary mt-3">
+                    <i class="fa fa-film"></i> Browse Movies
+                </a>
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function cancelBooking(bookingId) {
+            if (confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
+                $.ajax({
+                    url: '@Url.Action("CancelBooking", "Booking")',
+                    type: 'POST',
+                    data: { id: bookingId },
+                    success: function(response) {
+                        if (response.success) {
+                            toastr.success(response.message);
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function() {
+                        toastr.error('An error occurred while cancelling the booking');
+                    }
+                });
+            }
+        }
+    </script>
+
+    <style>
+        .booking-card {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: white;
+            height: 100%;
+        }
+
+            .booking-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            }
+
+        .booking-header {
+            padding: 25px;
+            position: relative;
+            min-height: 100px;
+        }
+
+        .booking-status-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+
+        .booking-body {
+            padding: 25px;
+        }
+
+        .booking-details {
+            margin-bottom: 20px;
+        }
+
+        .detail-row {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+            .detail-row:last-child {
+                border-bottom: none;
+                margin-bottom: 0;
+                padding-bottom: 0;
+            }
+
+            .detail-row i {
+                font-size: 18px;
+                color: #667eea;
+                margin-right: 15px;
+                margin-top: 3px;
+                min-width: 18px;
+            }
+
+            .detail-row div {
+                flex: 1;
+            }
+
+            .detail-row strong {
+                display: block;
+                font-size: 11px;
+                color: #666;
+                margin-bottom: 3px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .detail-row p {
+                margin: 0;
+                font-size: 15px;
+                color: #333;
+                word-wrap: break-word;
+            }
+
+            .detail-row .amount {
+                font-size: 20px;
+                font-weight: bold;
+                color: #667eea;
+            }
+
+        .booking-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+            .booking-actions .btn {
+                flex: 1;
+                min-width: 120px;
+                font-size: 13px;
+                padding: 10px 15px;
+            }
+
+        .badge {
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            border-radius: 20px;
+        }
+
+        .badge-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .badge-warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        @@media (max-width: 768px) {
+            .booking-actions .btn {
+                width: 100%;
+                min-width: auto;
+            }
+
+            .booking-header {
+                padding: 20px;
+                min-height: 80px;
+            }
+
+            .booking-body {
+                padding: 20px;
+            }
+
+            .detail-row i {
+                font-size: 16px;
+            }
+
+            .detail-row p {
+                font-size: 14px;
+            }
+        }
+    </style>
+}

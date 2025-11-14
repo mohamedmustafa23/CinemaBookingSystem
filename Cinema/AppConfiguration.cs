@@ -3,6 +3,7 @@ using Cinema.Models;
 using Cinema.Repositories;
 using Cinema.Repositories.IRepositories;
 using Cinema.Utilities;
+using Cinema.Utilities.DBInitilizer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,13 @@ namespace Cinema
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.LoginPath = "/Identity/Account/Login";
+                options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+            });
+
             services.AddTransient<IEmailSender, EmailSender>();
 
             services.AddScoped<IRepository<Category>, Repository<Category>>();
@@ -39,6 +47,11 @@ namespace Cinema
             services.AddScoped<IRepository<CinemaBranch>, Repository<CinemaBranch>>();
             services.AddScoped<IRepository<CinemaHall>, Repository<CinemaHall>>();
             services.AddScoped<IRepository<ApplicationUserOTP>, Repository<ApplicationUserOTP>>();
+            services.AddScoped<IRepository<Booking>, Repository<Booking>>();
+            services.AddScoped<IRepository<ShowTime>, Repository<ShowTime>>();
+            services.AddScoped<IRepository<BookingSeat>, Repository<BookingSeat>>();
+
+            services.AddScoped<IDBInitializer, DBInitializer>();
         }
     }
 }

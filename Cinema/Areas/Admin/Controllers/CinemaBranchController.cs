@@ -1,11 +1,15 @@
 ﻿using Cinema.Models;
 using Cinema.Repositories.IRepositories;
+using Cinema.Utilities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
 namespace Cinema.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = $"{SD.Role_SuperAdmin},{SD.Role_Admin},{SD.Role_Employee}")]
+
     public class CinemaBranchController : Controller
     {
         private readonly IRepository<CinemaBranch> _CinemaBranchRepository;
@@ -59,6 +63,7 @@ namespace Cinema.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
         [HttpPost]
+        [Authorize(Roles = $"{SD.Role_SuperAdmin},{SD.Role_Admin}")]
         public async Task<IActionResult> Delete(int id)
         {
             var branch = await _CinemaBranchRepository.GetOneAsync(b => b.Id == id);

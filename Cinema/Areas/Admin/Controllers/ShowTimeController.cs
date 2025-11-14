@@ -1,6 +1,8 @@
 ﻿using Cinema.Models;
 using Cinema.Repositories.IRepositories;
+using Cinema.Utilities;
 using Cinema.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -8,6 +10,7 @@ using System.Threading.Tasks;
 namespace Cinema.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = $"{SD.Role_SuperAdmin},{SD.Role_Admin},{SD.Role_Employee}")]
     public class ShowtimeController : Controller
     {
         private readonly ILogger<ShowtimeController> _logger;
@@ -134,7 +137,7 @@ namespace Cinema.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-
+        [Authorize(Roles = $"{SD.Role_SuperAdmin},{SD.Role_Admin}")]
         public async Task<IActionResult> Delete(int id)
         {
             var showtime = await _showtimeRepository.GetOneAsync(s => s.Id == id);

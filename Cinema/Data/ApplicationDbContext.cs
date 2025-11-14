@@ -18,6 +18,8 @@ namespace Cinema.Data
         public DbSet<MovieActor> MovieActors { get; set; }
         public DbSet<ShowTime> ShowTimes { get; set; }
         public DbSet<ApplicationUserOTP> ApplicationUserOTPs { get; set; }
+        public DbSet<Booking> Bookings { get; set; }
+        public DbSet<BookingSeat> BookingSeats { get; set; }
         //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         //{
         //    base.OnConfiguring(optionsBuilder);

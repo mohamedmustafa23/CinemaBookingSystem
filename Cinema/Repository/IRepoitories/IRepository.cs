@@ -13,7 +13,8 @@ namespace Cinema.Repositories.IRepositories
             Expression<Func<T, bool>>? expression = null,
             Expression<Func<T, object>>[]? includes = null,
             bool tracked = true,
-            CancellationToken cancellationToken = default);
+            CancellationToken cancellationToken = default,
+            Func<object, object> orderBy = null);
 
         Task<T?> GetOneAsync(
             Expression<Func<T, bool>>? expression = null,

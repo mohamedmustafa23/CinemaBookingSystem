@@ -1,4 +1,5 @@
 ﻿using Cinema;
+using Cinema.Utilities.DBInitilizer;
 
 public class Program
 {
@@ -12,31 +13,54 @@ public class Program
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-        builder.Services.RegisterConfig(connectionString); 
+        builder.Services.RegisterConfig(connectionString);
 
+        // Add Session BEFORE Build()
+        builder.Services.AddSession(options =>
+        {
+            options.IdleTimeout = TimeSpan.FromMinutes(30);
+            options.Cookie.HttpOnly = true;
+            options.Cookie.IsEssential = true;
+        });
+
+        // Build the app AFTER all services
         var app = builder.Build();
 
+        // initialize database
+        using (var scope = app.Services.CreateScope())
+        {
+            var service = scope.ServiceProvider.GetRequiredService<IDBInitializer>();
+            service.Initialize();
+        }
 
-        var scope = app.Services.CreateScope();
-
-        // Configure the HTTP request pipeline.
+        // error handling
         if (!app.Environment.IsDevelopment())
         {
             app.UseExceptionHandler("/Home/Error");
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
         }
 
         app.UseHttpsRedirection();
-        app.UseRouting();
 
+        // static files
+        app.UseStaticFiles();
+
+        // Use Session BEFORE Routing
+        app.UseSession();
+
+        app.UseRouting();
         app.UseAuthorization();
 
-        app.MapStaticAssets();
+        // Routing for Areas + default
+        app.MapControllerRoute(
+            name: "areas",
+            pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
+        );
+
         app.MapControllerRoute(
             name: "default",
-            pattern: "{area=Customer}/{controller=Home}/{action=Index}/{id?}")
-            .WithStaticAssets();
+            pattern: "{area=Customer}/{controller=Home}/{action=Index}/{id?}"
+        );
 
         app.Run();
     }

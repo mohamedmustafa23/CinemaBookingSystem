@@ -1,11 +1,14 @@
-﻿using Cinema.Repositories.IRepositories;
-using Cinema.Models;
+﻿using Cinema.Models;
+using Cinema.Repositories.IRepositories;
+using Cinema.Utilities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
 namespace Cinema.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = $"{SD.Role_SuperAdmin},{SD.Role_Admin},{SD.Role_Employee}")]
     public class CategoryController : Controller
     {
         private readonly IRepository<Category> _categoryRepository;
@@ -68,6 +71,7 @@ namespace Cinema.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = $"{SD.Role_SuperAdmin},{SD.Role_Admin}")]
         public async Task<IActionResult> Delete(int id)
         {
             var category = await _categoryRepository.GetOneAsync(c => c.Id == id);

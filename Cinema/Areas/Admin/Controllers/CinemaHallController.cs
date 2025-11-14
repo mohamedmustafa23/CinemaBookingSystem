@@ -1,12 +1,15 @@
 ﻿using Cinema.Models;
 using Cinema.Repositories.IRepositories;
+using Cinema.Utilities;
 using Cinema.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
 namespace Cinema.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = $"{SD.Role_SuperAdmin},{SD.Role_Admin},{SD.Role_Employee}")]
     public class CinemaHallController : Controller
     {
         private readonly ILogger<CinemaHallController> _logger;
@@ -78,6 +81,7 @@ namespace Cinema.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
         [HttpPost]
+        [Authorize(Roles = $"{SD.Role_SuperAdmin},{SD.Role_Admin}")]
         public async Task<IActionResult> Delete(int id)
         {
             var hall = await _cinemaHallRepository.GetOneAsync(e => e.Id == id);

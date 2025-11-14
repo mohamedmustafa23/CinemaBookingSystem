@@ -51,11 +51,14 @@
                                     <a href="/Admin/CinemaHall/Edit/@hall.Id" class="btn btn-sm btn-outline-warning me-1">
                                         <i class="bi bi-pencil-square"></i> Edit
                                     </a>
-                                    <form action="/Admin/CinemaHall/Delete/@hall.Id" method="post" class="d-inline">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="bi bi-trash"></i> Delete
-                                        </button>
-                                    </form>
+                                    @if (User.IsInRole(SD.Role_SuperAdmin) || User.IsInRole(SD.Role_Admin))
+                                    {
+                                        <form action="/Admin/CinemaHall/Delete/@hall.Id" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    }
                                 </td>
                             </tr>
                         }

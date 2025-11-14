@@ -1,0 +1,518 @@
+﻿@model Booking
+
+@{
+    ViewData["Title"] = $"Booking Details - {Model.BookingReference}";
+}
+
+<section class="w3l-breadcrumb">
+    <div class="container">
+        <h2 class="inner-w3-title mt-5">Booking Details</h2>
+        <ul class="breadcrumbs-custom-path">
+            <li><a asp-action="MyBookings">My Bookings</a></li>
+            <li class="active"><span class="fa fa-chevron-right mx-2" aria-hidden="true"></span> @Model.BookingReference</li>
+        </ul>
+    </div>
+</section>
+
+<section class="booking-details-section py-5">
+    <div class="container py-lg-4">
+        <div class="row">
+            <!-- Movie & Booking Info -->
+            <div class="col-lg-8">
+                <div class="details-card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="fa fa-film"></i> Movie Details
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <img src="@Model.ShowTime.Movie.Poster"
+                                     alt="@Model.ShowTime.Movie.Title"
+                                     class="img-fluid rounded">
+                            </div>
+                            <div class="col-md-8">
+                                <h3>@Model.ShowTime.Movie.Title</h3>
+                                <p class="text-muted">@Model.ShowTime.Movie.Description</p>
+                                <div class="movie-meta">
+                                    <p><strong>Language:</strong> @Model.ShowTime.Movie.Language</p>
+                                    <p><strong>Duration:</strong> @Model.ShowTime.Movie.Duration minutes</p>
+                                    <p><strong>Age Restriction:</strong> @Model.ShowTime.Movie.AgeRestriction+</p>
+                                    <p><strong>Release Date:</strong> @Model.ShowTime.Movie.ReleaseDate.ToString("dd MMM yyyy")</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="details-card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0">
+                            <i class="fa fa-ticket"></i> E-Ticket
+                        </h4>
+                    </div>
+                    <div class="card-body ticket-wrapper">
+                        <div class="ticket-body">
+                            <div class="ticket">
+                                <div class="holes-top"></div>
+                                <div class="title">
+                                    <p class="cinema">MyShowz Entertainment</p>
+                                    <p class="movie-title">@Model.ShowTime.Movie.Title</p>
+                                </div>
+                                <div class="poster">
+                                    <img src="@Model.ShowTime.Movie.Poster"
+                                         alt="@Model.ShowTime.Movie.Title"
+                                         onerror="this.src='/assets/images/placeholder.jpg'" />
+                                </div>
+                                <div class="info">
+                                    <table class="info-table ticket-table">
+                                        <tr>
+                                            <th>CINEMA HALL</th>
+                                            <th>DATE</th>
+                                            <th>TIME</th>
+                                        </tr>
+                                        <tr>
+                                            <td class="bigger">@Model.ShowTime.CinemaHall.Name</td>
+                                            <td class="bigger">@Model.ShowTime.ShowDate.ToString("dd MMM")</td>
+                                            <td class="bigger">@Model.ShowTime.StartTime.ToString(@"hh\:mm")</td>
+                                        </tr>
+                                    </table>
+                                    <table class="info-table ticket-table">
+                                        <tr>
+                                            <th>SEATS</th>
+                                            <th>PRICE</th>
+                                            <th>BOOKING ID</th>
+                                        </tr>
+                                        <tr>
+                                            <td>@string.Join(", ", Model.BookingSeats.Select(bs => bs.SeatNumber))</td>
+                                            <td>@Model.TotalAmount.ToString("N2") EGP</td>
+                                            <td>@Model.BookingReference</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="holes-lower"></div>
+                                <div class="serial">
+                                    <div class="barcode-placeholder">
+                                        <svg viewBox="0 0 200 50" style="width: 100%; height: 50px;">
+                                            @for (int i = 0; i < 50; i++)
+                                            {
+                                                var color = (i % 3 == 0) ? "black" : "white";
+                                                var width = (i % 2 == 0) ? 2 : 4;
+                                                <rect x="@(i * 4)" y="0" width="@width" height="50" fill="@color" />
+                                            }
+                                        </svg>
+                                    </div>
+                                    <p class="text-center mt-2 mb-0"><small>@Model.BookingReference</small></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="button" class="btn btn-primary" onclick="window.print()">
+                                <i class="fa fa-print"></i> Print Ticket
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="downloadTicket()">
+                                <i class="fa fa-download"></i> Download PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Summary -->
+            <div class="col-lg-4">
+                <div class="details-card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h4 class="mb-0">
+                            <i class="fa fa-info-circle"></i> Booking Summary
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="summary-item">
+                            <strong>Booking Reference:</strong>
+                            <span>@Model.BookingReference</span>
+                        </div>
+                        <div class="summary-item">
+                            <strong>Status:</strong>
+                            <span class="badge badge-@(Model.BookingStatus == "Confirmed" ? "success" : Model.BookingStatus == "Cancelled" ? "danger" : "warning")">
+                                @Model.BookingStatus
+                            </span>
+                        </div>
+                        <div class="summary-item">
+                            <strong>Booking Date:</strong>
+                            <span>@Model.BookingDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                        </div>
+                        <div class="summary-item">
+                            <strong>Show Date:</strong>
+                            <span>@Model.ShowTime.ShowDate.ToString("dddd, dd MMM yyyy")</span>
+                        </div>
+                        <div class="summary-item">
+                            <strong>Show Time:</strong>
+                            <span>@Model.ShowTime.StartTime.ToString(@"hh\:mm tt")</span>
+                        </div>
+                        <div class="summary-item">
+                            <strong>Cinema Hall:</strong>
+                            <span>@Model.ShowTime.CinemaHall.Name</span>
+                        </div>
+                        <div class="summary-item">
+                            <strong>Number of Seats:</strong>
+                            <span>@Model.NumberOfSeats</span>
+                        </div>
+                        <div class="summary-item">
+                            <strong>Seats:</strong>
+                            <span>@string.Join(", ", Model.BookingSeats.Select(bs => bs.SeatNumber))</span>
+                        </div>
+                        <hr>
+                        <div class="summary-item total">
+                            <strong>Total Amount:</strong>
+                            <span class="amount">@Model.TotalAmount.ToString("N2") EGP</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="details-card">
+                    <div class="card-header bg-warning text-white">
+                        <h4 class="mb-0">
+                            <i class="fa fa-credit-card"></i> Payment Details
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="summary-item">
+                            <strong>Payment Method:</strong>
+                            <span>@Model.PaymentMethod</span>
+                        </div>
+                        <div class="summary-item">
+                            <strong>Payment Status:</strong>
+                            <span class="badge badge-@(Model.PaymentStatus == "Paid" ? "success" : Model.PaymentStatus == "Refunded" ? "warning" : "danger")">
+                                @Model.PaymentStatus
+                            </span>
+                        </div>
+                        @if (Model.PaymentDate.HasValue)
+                        {
+                            <div class="summary-item">
+                                <strong>Payment Date:</strong>
+                                <span>@Model.PaymentDate.Value.ToString("dd MMM yyyy, hh:mm tt")</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                @if (Model.BookingStatus == "Confirmed" &&
+                                (Model.ShowTime.ShowDate.Date + Model.ShowTime.StartTime) > DateTime.Now.AddHours(2))
+                {
+                    <div class="mt-3">
+                        <button type="button"
+                                class="btn btn-danger btn-block"
+                                onclick="cancelBooking(@Model.Id)">
+                            <i class="fa fa-times"></i> Cancel Booking
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function cancelBooking(bookingId) {
+            if (confirm('Are you sure you want to cancel this booking? A refund will be processed to your original payment method.')) {
+                $.ajax({
+                    url: '@Url.Action("CancelBooking", "Booking")',
+                    type: 'POST',
+                    data: { id: bookingId },
+                    success: function(response) {
+                        if (response.success) {
+                            toastr.success(response.message);
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function() {
+                        toastr.error('An error occurred while cancelling the booking');
+                    }
+                });
+            }
+        }
+
+        function downloadTicket() {
+            toastr.info('PDF download feature coming soon!');
+            // You can implement PDF generation here using libraries like jsPDF
+        }
+    </script>
+
+    <style>
+        .details-card {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            background: white;
+            margin-bottom: 20px;
+        }
+
+            .details-card .card-header {
+                padding: 20px;
+            }
+
+            .details-card .card-body {
+                padding: 25px;
+            }
+
+        .movie-meta p {
+            margin-bottom: 8px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+            .summary-item:last-child {
+                border-bottom: none;
+            }
+
+            .summary-item strong {
+                color: #666;
+                font-size: 14px;
+            }
+
+            .summary-item span {
+                color: #333;
+                font-size: 14px;
+                text-align: right;
+            }
+
+            .summary-item.total {
+                padding-top: 15px;
+                font-size: 18px;
+            }
+
+                .summary-item.total .amount {
+                    font-size: 24px;
+                    font-weight: bold;
+                    color: #667eea;
+                }
+
+        /* Ticket Styling */
+        .ticket-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 15px;
+        }
+
+        .ticket-body {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .ticket {
+            background: white;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+            .ticket .title {
+                padding: 15px 20px;
+                text-align: center;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+
+                .ticket .title .cinema {
+                    font-size: 12px;
+                    margin: 0;
+                    opacity: 0.9;
+                    font-weight: 600;
+                    letter-spacing: 1px;
+                    text-transform: uppercase;
+                }
+
+                .ticket .title .movie-title {
+                    font-size: 18px;
+                    margin: 5px 0 0 0;
+                    font-weight: bold;
+                    line-height: 1.3;
+                }
+
+            .ticket .poster {
+                width: 100%;
+                height: 200px;
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+                border-top: 3px solid #667eea;
+                border-bottom: 3px solid #667eea;
+            }
+
+                .ticket .poster img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    object-position: center top;
+                }
+
+            .ticket .info {
+                padding: 20px 15px;
+                background: white;
+            }
+
+            .ticket .info-table {
+                width: 100%;
+                margin-bottom: 12px;
+                border-collapse: collapse;
+            }
+
+                .ticket .info-table:last-child {
+                    margin-bottom: 0;
+                }
+
+                .ticket .info-table th {
+                    font-size: 10px;
+                    color: #999;
+                    text-transform: uppercase;
+                    font-weight: 600;
+                    padding: 6px 4px;
+                    text-align: center;
+                    letter-spacing: 0.5px;
+                }
+
+                .ticket .info-table td {
+                    font-size: 14px;
+                    color: #333;
+                    font-weight: 600;
+                    padding: 4px;
+                    text-align: center;
+                }
+
+                    .ticket .info-table td.bigger {
+                        font-size: 16px;
+                        color: #667eea;
+                        font-weight: 700;
+                    }
+
+            .ticket .serial {
+                padding: 15px 15px;
+                background: #f8f9fa;
+                border-top: 2px dashed #ddd;
+            }
+
+            .ticket .holes-top,
+            .ticket .holes-lower {
+                height: 15px;
+                position: relative;
+                background: white;
+            }
+
+                .ticket .holes-top::before,
+                .ticket .holes-top::after,
+                .ticket .holes-lower::before,
+                .ticket .holes-lower::after {
+                    content: "";
+                    position: absolute;
+                    width: 25px;
+                    height: 25px;
+                    background: #f8f9fa;
+                    border-radius: 50%;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    box-shadow: 0 0 0 3px white;
+                }
+
+                .ticket .holes-top::before,
+                .ticket .holes-lower::before {
+                    left: -12px;
+                }
+
+                .ticket .holes-top::after,
+                .ticket .holes-lower::after {
+                    right: -12px;
+                }
+
+        .barcode-placeholder {
+            margin: 10px 0;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+            .barcode-placeholder svg {
+                display: block;
+                margin: 0 auto;
+            }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .ticket-body {
+                max-width: 100%;
+                padding: 0 10px;
+            }
+
+            .ticket .poster {
+                height: 180px;
+            }
+
+            .ticket .title .movie-title {
+                font-size: 16px;
+            }
+
+            .ticket .info {
+                padding: 15px 10px;
+            }
+
+            .ticket .info-table td {
+                font-size: 12px;
+                padding: 3px;
+            }
+
+                .ticket .info-table td.bigger {
+                    font-size: 14px;
+                }
+
+            .ticket .info-table th {
+                font-size: 9px;
+                padding: 5px 3px;
+            }
+        }
+
+        @@media print {
+            body * {
+                visibility: hidden;
+            }
+
+            .ticket-wrapper,
+            .ticket-wrapper * {
+                visibility: visible;
+            }
+
+            .ticket-wrapper {
+                position: fixed;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            .btn,
+            .details-card .card-header,
+            .breadcrumbs-custom-path {
+                display: none !important;
+            }
+
+            .ticket {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+}

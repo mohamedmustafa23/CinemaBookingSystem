@@ -1,10 +1,11 @@
 ﻿@model CinemaVM
-<!-- main-slider -->
+
+
 <section class="w3l-main-slider position-relative" id="home">
 	<div class="companies20-content">
 		<div class="owl-one owl-carousel owl-theme">
-			@foreach(var movie in Model.Movies)
-			{				
+			@foreach (var movie in Model.Movies)
+			{
 				<div class="item">
 					<li>
 						<div class="slider-info banner-view bg bg2" style="background-image: url('@movie.Poster');">
@@ -29,180 +30,225 @@
 						</div>
 					</li>
 				</div>
-			}	
+			}
 		</div>
 	</div>
 </section>
-<!-- main-slider -->
 <!--grids-sec1-->
 <section class="w3l-grids">
 	<div class="grids-main py-5">
-		<div class="container py-lg-3">
+		<div class="container py-lg-4">
 			<div class="headerhny-title">
 				<div class="w3l-title-grids">
 					<div class="headerhny-left">
-						<h3 class="hny-title">What's On</h3>
+						<h3 class="hny-title">Latest Movies</h3>
 					</div>
 					<div class="headerhny-right text-lg-right">
-						<h4><a class="show-title" href="movies.html">Show all</a></h4>
+						<h4><a class="show-title" href="movies">Show all</a></h4>
 					</div>
 				</div>
 			</div>
 			<div class="w3l-populohny-grids">
-
-                @foreach (var movie in Model.TodayMovies)
-				{
-					<div class="item vhny-grid">
-						<div class="box16">
-							<a href="@movie.Trailer">
-								<figure>
-									<img class="img-fluid" src="@movie.Poster" alt="">
-								</figure>
-								<div class="box-content">
-									<h3 class="title">@movie.Title</h3>
-									<h4>
-										<span class="post">
-											<span class="fa fa-clock-o"> </span>
-											<span class="fa fa-clock-o"> </span>
-
-											@{
-												int hours = @movie.Duration / 60;
-												int minutes = @movie.Duration % 60;
-											}
-											@(hours > 0 ? $"{hours}h {minutes}m" : $"{minutes}m")
-
-										</span>
-
-										<span class="post fa fa-heart text-right"></span>
-									</h4>
-								</div>
-								<span class="fa fa-play video-icon" aria-hidden="true"></span>
-							</a>
-						</div>
-					</div>
-				}
-
-			</div>
-		</div>
-	</div>
-</section>
-<!--//grids-sec1-->
-<!--grids-sec2-->
-<section class="w3l-grids">
-	<div class="grids-main py-5">
-		<div class="container py-lg-3">
-			<div class="headerhny-title">
-				<div class="w3l-title-grids">
-					<div class="headerhny-left">
-						<h3 class="hny-title">New Releases</h3>
-					</div>
-					<div class="headerhny-right text-lg-right">
-						<h4><a class="show-title" href="movies.html">Show all</a></h4>
-					</div>
-				</div>
-			</div>
-			<div class="owl-three owl-carousel owl-theme">
-				@foreach(var movie in Model.NewMovies)
+				@foreach (var movie in Model.NewMovies)
 				{
 					<div class="item vhny-grid">
 						<div class="box16 mb-0">
-							<a href="@movie.Trailer">
-								<figure>
-									<img class="img-fluid" src="@movie.Poster" alt="">
-								</figure>
+							<figure>
+								<img class="img-fluid" src="@movie.Poster" alt="">
+							</figure>
+							<a href=".a-@movie.Id" data-toggle="modal">
 								<div class="box-content">
-
+									<h3 class="title">@movie.Title</h3>
 									<h4>
+										@{
+											var durationTimeSpan = TimeSpan.FromMinutes(movie.Duration);
+										}
 										<span class="post">
-											<span class="fa fa-clock-o"> </span><span class="fa fa-clock-o"> </span>
-											@{
-												int hours = @movie.Duration / 60;
-												int minutes = @movie.Duration % 60;
-											}
-											@(hours > 0 ? $"{hours}h {minutes}m" : $"{minutes}m")
+											<span class="fa fa-clock-o"> </span> @durationTimeSpan.ToString(@"hh\:mm")
 										</span>
+										<span class="post fa fa-heart text-right"></span>
+									</h4>
+								</div>
+							</a>
+							<!-- Modal -->
+							<div class="modal fade a-@movie.Id" id="myModal" tabindex="-1" role="dialog" aria-hidden="true">
+								<div class="modal-dialog" role="document">
+									<div class="modal-content" id="mymodalcontent">
+										<div class="modal-header">
+											<h4 class="modal-title" id="exampleModalLongTitle">DETAILS</h4>
+											<button type="button" class="closebtn" data-dismiss="modal"
+											aria-label="Close">
+												<span aria-hidden="true">&times;</span>
+											</button>
+										</div>
+										<div class="modal-body" id="dynamic-content">
+											<img src="@movie.Poster" class="img-fluid modalimg" alt="" />
+											<p>
+												<h3>Release Date&nbsp;:@movie.ReleaseDate.ToString("dd/MM/yyyy") </h3>
+												<h3>Genre;:@movie.AgeRestriction </h3>
+											</p>
+											<h4>About Movie</h4>
+											<p>
+												@movie.Description
+											</p>
+										</div>
+										<div class="bookbtn">
+											<button type="button" class="btn btn-success"
+											onclick="location.href='Customer/Home/Book/@movie.Id';">
+												Book
+											</button>
+										</div>
+									</div>
+								</div>
+							</div>
+							<!-- modal end -->
+						</div>
+					</div>
+				}
+			</div>
+			<!-- ***********************************Adults Section ************************************** -->
+			<div class="w3l-title-grids">
+				<div class="headerhny-left">
+					<h3 class="hny-title">Adults</h3>
+				</div>
+				<div class="headerhny-right text-lg-right">
+					<h4><a class="show-title" href="movies.html">Show all</a></h4>
+				</div>
+			</div>
+			<div class="w3l-populohny-grids">
+				@foreach (var movie in Model.AdultMovies)
+				{
+					<div class="item vhny-grid">
+						<div class="box16 mb-0">
+							<figure>
+								<img class="img-fluid" src="@movie.Poster" alt="">
+							</figure>
+							<a href=".b-@movie.Id" data-toggle="modal">
+								<div class="box-content">
+									<h3 class="title">@movie.Title</h3>
+									<h4>
+										@{
+											var durationTimeSpan = TimeSpan.FromMinutes(movie.Duration);
+										}
+										<span class="post">
+											<span class="fa fa-clock-o"> </span> @durationTimeSpan.ToString(@"hh\:mm")
+										</span>
+										<span class="post fa fa-heart text-right"></span>
 
 										<span class="post fa fa-heart text-right"></span>
 									</h4>
 								</div>
-								<span class="fa fa-play video-icon" aria-hidden="true"></span>
 							</a>
-						</div>
-						<h3> <a class="title-gd" href="movies.html">Scoob</a></h3>
-						<p>Lorem ipsum dolor sit amet consectetur adipisicing elit</p>
-						<div class="button-center text-center mt-4">
-							<a href="movies.html" class="btn watch-button">Watch now</a>
+							<!-- Modal -->
+							<div class="modal fade b-@movie.Id" id="myModal" tabindex="-1" role="dialog" aria-hidden="true">
+								<div class="modal-dialog" role="document">
+									<div class="modal-content" id="mymodalcontent">
+										<div class="modal-header">
+											<h4 class="modal-title" id="exampleModalLongTitle">DETAILS</h4>
+											<button type="button" class="closebtn" data-dismiss="modal"
+													aria-label="Close">
+												<span aria-hidden="true">&times;</span>
+											</button>
+										</div>
+										<div class="modal-body" id="dynamic-content">
+											<img src="@movie.Poster" class="img-fluid modalimg" alt="" />
+											<p>
+												<h3>Release Date&nbsp;:@movie.ReleaseDate.ToString("dd/MM/yyyy") </h3>
+												<h3>Genre;:@movie.AgeRestriction </h3>
+											</p>
+											<h4>About Movie</h4>
+											<p>
+												@movie.Description
+											</p>
+										</div>
+										<div class="bookbtn">
+											<button type="button" class="btn btn-success"
+													onclick="location.href='Customer/Home/Book/@movie.Id';">
+												Book
+											</button>
+										</div>
+									</div>
+								</div>
+							</div>
+							<!-- modal end -->
 						</div>
 					</div>
-				}				
+				}
 			</div>
+
+			<!-- ***********************************kids Section ************************************** -->
+			<div class="w3l-title-grids">
+				<div class="headerhny-left">
+					<h3 class="hny-title">Kids</h3>
+				</div>
+				<div class="headerhny-right text-lg-right">
+					<h4><a class="show-title" href="movies.html">Show all</a></h4>
+				</div>
+			</div>
+			<div class="w3l-populohny-grids">
+				@foreach (var movie in Model.KidsMovies)
+				{
+					<div class="item vhny-grid">
+						<div class="box16 mb-0">
+							<figure>
+								<img class="img-fluid" src="@movie.Poster" alt="">
+							</figure>
+							<a href=".c-@movie.Id" data-toggle="modal">
+								<div class="box-content">
+									<h3 class="title">@movie.Title</h3>
+									<h4>
+										@{
+											var durationTimeSpan = TimeSpan.FromMinutes(movie.Duration);
+										}
+										<span class="post">
+											<span class="fa fa-clock-o"> </span> @durationTimeSpan.ToString(@"hh\:mm")
+										</span>
+										<span class="post fa fa-heart text-right"></span>
+									</h4>
+								</div>
+							</a>
+							<!-- Modal -->
+							<div class="modal fade c-@movie.Id" id="myModal" tabindex="-1" role="dialog" aria-hidden="true">
+								<div class="modal-dialog" role="document">
+									<div class="modal-content" id="mymodalcontent">
+										<div class="modal-header">
+											<h4 class="modal-title" id="exampleModalLongTitle">DETAILS</h4>
+											<button type="button" class="closebtn" data-dismiss="modal"
+													aria-label="Close">
+												<span aria-hidden="true">&times;</span>
+											</button>
+										</div>
+										<div class="modal-body" id="dynamic-content">
+											<img src="@movie.Poster" class="img-fluid modalimg" alt="" />
+											<p>
+												<h3>Release Date&nbsp;:@movie.ReleaseDate.ToString("dd/MM/yyyy") </h3>
+												<h3>Genre;:@movie.AgeRestriction </h3>
+											</p>
+											<h4>About Movie</h4>
+											<p>
+												@movie.Description
+											</p>
+										</div>
+										<div class="bookbtn">
+											<button type="button" class="btn btn-success"
+													onclick="location.href='Customer/Home/Book/@movie.Id';">
+												Book
+											</button>
+										</div>
+									</div>
+								</div>
+							</div>
+							<!-- modal end -->
+						</div>
+					</div>
+				}
+			</div>
+		</div>
+		<div class="text-center mt-4">
+			<a href="movies.html" class="view-button">
+				View all <span class="fa fa-angle-double-right ml-2" aria-hidden="true"></span>
+			</a>
 		</div>
 
 	</div>
 </section>
-<!--grids-sec2-->
-<!--mid-slider -->
-<section class="w3l-mid-slider position-relative">
-	<div class="companies20-content">
-		<div class="owl-mid owl-carousel owl-theme">
-			<div class="item">
-				<li>
-					<div class="slider-info mid-view bg bg2">
-						<div class="container">
-							<div class="mid-info">
-								<span class="sub-text">Comedy</span>
-								<h3>Jumanji: The Next Level</h3>
-								<p>2019 ‧ Comedy/Action ‧ 2h 3m</p>
-								<a class="watch" href="movies.html">
-									<span class="fa fa-play"
-										  aria-hidden="true"></span>
-									Watch Trailer
-								</a>
-							</div>
-						</div>
-					</div>
-				</li>
-			</div>
-			<div class="item">
-				<li>
-					<div class="slider-info mid-view mid-top1 bg bg2">
-						<div class="container">
-							<div class="mid-info">
-								<span class="sub-text">Adventure</span>
-								<h3>Dolittle</h3>
-								<p>2020 ‧ Family/Adventure ‧ 1h 41m</p>
-								<a class="watch" href="movies.html">
-									<span class="fa fa-play"
-										  aria-hidden="true"></span>
-									Watch Trailer
-								</a>
-							</div>
-						</div>
-					</div>
-				</li>
-			</div>
-			<div class="item">
-				<li>
-					<div class="slider-info mid-view mid-top2 bg bg2">
-						<div class="container">
-							<div class="mid-info">
-								<span class="sub-text">Action</span>
-								<h3>Bad Boys for Life</h3>
-								<p>2020 ‧ Comedy/Action ‧ 2h 4m</p>
-								<a class="watch" href="movies.html">
-									<span class="fa fa-play"
-										  aria-hidden="true"></span>
-									Watch Trailer
-								</a>
-							</div>
-						</div>
-					</div>
-				</li>
-			</div>
-		</div>
-	</div>
-</section>
-@section Scripts {
-	<partial name="_ValidationScriptsPartial" />
-    <partial name="_NotificationPartial" />
-}

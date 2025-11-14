@@ -1,0 +1,84 @@
+﻿@model IEnumerable<ApplicationUser>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Users</h2>
+        <a href="/Admin/User/Create" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New User
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th style="width:160px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        // تحديد حالة المستخدم
+                        bool isLocked = user.LockoutEnd != null && user.LockoutEnd > DateTime.Now;
+
+                        <tr>
+                            <td>@user.Id</td>
+                            <td>@user.FirstName @user.LastName</td>
+                            <td>@user.Email</td>
+                            <td>@user.Role</td>
+
+                            
+
+                            <!-- حالة المستخدم -->
+                            <td>
+                                @if (isLocked)
+                                {
+                                    <span class="badge bg-danger">Locked</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                            </td>
+
+                            <!-- الأزرار -->
+                            @if (User.IsInRole(SD.Role_SuperAdmin))
+                            {
+                                <td>
+                                    @if (isLocked)
+                                    {
+                                        <a href="/Admin/User/LockUnLock/@user.Id"
+                                           class="btn btn-success btn-sm">
+                                            <i class="bi bi-unlock"></i> Unlock
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a href="/Admin/User/LockUnLock/@user.Id"
+                                           class="btn btn-danger btn-sm">
+                                            <i class="bi bi-lock"></i> Lock
+                                        </a>
+                                    }
+                                </td>
+                            }
+                            else
+                            {
+                                <td><span class="text-muted">No Actions</span></td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_NotificationPartial" />
+}
